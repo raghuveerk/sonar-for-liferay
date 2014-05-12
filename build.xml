@@ -4,9 +4,14 @@
 <project name="sonar-for-liferay" default="configure-sonar">
 
     <target name="configure-sonar">
-        <echo message="Generating Sonar properties file" />
 
-        <property file="${sdk.dir}/sonar-id.properties" />
+        <path id="lib.classpath">
+            <fileset dir="${basedir}/lib" includes="*.jar" />
+        </path>
+
+        <taskdef classpathref="lib.classpath" resource="net/sf/antcontrib/antlib.xml" />
+
+        <echo message="Generating Sonar properties file" />
 
         <fail message="Please make sure to set the following properties: sonar.projectKey, sonar.projectName">
             <condition>
@@ -20,19 +25,27 @@
         </fail>
 
         <delete file="${sdk.dir}/sonar-project.properties" />
-
-        <property name="sonar.host.url" value="http://localhost:9000" />
         <property name="sonar.prop.file" value="${sdk.dir}/sonar-project.properties" />
 
-        <exec executable="git" outputproperty="build.commit">
+        <exec executable="git" outputproperty="build.commit" dir="${sdk.dir}">
             <arg value="describe"/>
             <arg value="--tags"/>
         </exec>
+        <echo>build.commit = ${build.commit}</echo>
         <propertyregex property="sonar.projectVersion"
             input="${build.commit}"
             regexp="-.*"
             replace=""
             global="true" />
+        <if>
+            <not>
+                <isset property="sonar.projectVersion" />
+            </not>
+            <then>
+                <property name="sonar.projectVersion" value="${build.commit}" />
+            </then>
+        </if>
+        <echo>version = ${sonar.projectVersion}</echo>
 
         <path id="plugins.list">
             <dirset dir="${sdk.dir}">
@@ -51,7 +64,6 @@
             <flattenmapper/>
         </pathconvert>
         <propertyfile file="${sonar.prop.file}" comment="GENERATED FILE - DO NOT EDIT!">
-            <entry key="sonar.host.url" value="${sonar.host.url}" />
             <entry key="sonar.projectKey" value="${sonar.projectKey}" />
             <entry key="sonar.projectName" value="${sonar.projectName}" />
             <entry key="sonar.projectVersion" value="${sonar.projectVersion}" />
