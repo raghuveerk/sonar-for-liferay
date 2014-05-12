@@ -80,12 +80,14 @@
                 <basename property="module.id" file="@{dir}"/>
                 <echo>Updating for module: ${module.id}</echo>
 
+                <echo>Current plugin dir is: @{dir}</echo>
                 <propertyregex property="module.basedir"
                     override="yes"
                     input="@{dir}"
                     regexp="${sdk.dir}/"
                     replace=""
                     global="true" />
+                <echo>Current plugin module project dir is then: ${module.basedir}</echo>
 
                 <local name="module.sources" />
                 <pathconvert pathsep="," property="module.sources">
