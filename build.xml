@@ -5,6 +5,8 @@
 
     <target name="configure-sonar">
 
+        <property name="sdk.dir" value="${user.dir}" />
+
         <path id="lib.classpath">
             <fileset dir="${basedir}/lib" includes="*.jar" />
         </path>
