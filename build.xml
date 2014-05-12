@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<!DOCTYPE project>
+
+<project name="sonar-for-liferay" default="configure-sonar">
+
+    <target name="configure-sonar">
+        <echo message="Generating Sonar properties file" />
+
+        <property file="${sdk.dir}/sonar-id.properties" />
+
+        <fail message="Please make sure to set the following properties: sonar.projectKey, sonar.projectName">
+            <condition>
+                <not>
+                    <and>
+                        <isset property="sonar.projectKey"/>
+                        <isset property="sonar.projectName"/>
+                    </and>
+                </not>
+            </condition>
+        </fail>
+
+        <delete file="${sdk.dir}/sonar-project.properties" />
+
+        <property name="sonar.host.url" value="http://localhost:9000" />
+        <property name="sonar.prop.file" value="${sdk.dir}/sonar-project.properties" />
+
+        <exec executable="git" outputproperty="build.commit">
+            <arg value="describe"/>
+            <arg value="--tags"/>
+        </exec>
+        <propertyregex property="sonar.projectVersion"
+            input="${build.commit}"
+            regexp="-.*"
+            replace=""
+            global="true" />
+
+        <path id="plugins.list">
+            <dirset dir="${sdk.dir}">
+                <include name="ext/*" />
+                <include name="hooks/*" />
+                <include name="portlets/*" />
+                <include name="theme/*" />
+                <include name="webs/*" />
+                <present targetdir="${sdk.dir}" present="srconly"> 
+                    <mapper type="regexp" from="(.*)" to="\1/.disable-sonar" /> 
+                </present> 
+            </dirset>
+        </path>
+
+        <pathconvert pathsep="," property="modules.list" refid="plugins.list">
+            <flattenmapper/>
+        </pathconvert>
+        <propertyfile file="${sonar.prop.file}" comment="GENERATED FILE - DO NOT EDIT!">
+            <entry key="sonar.host.url" value="${sonar.host.url}" />
+            <entry key="sonar.projectKey" value="${sonar.projectKey}" />
+            <entry key="sonar.projectName" value="${sonar.projectName}" />
+            <entry key="sonar.projectVersion" value="${sonar.projectVersion}" />
+            <entry key="sonar.modules" value="${modules.list}" />
+        </propertyfile>
+        <echo></echo>
+
+        <for param="dir">
+            <path refid="plugins.list" />
+            <sequential>
+                <local name="module.id"/>
+                <basename property="module.id" file="@{dir}"/>
+                <echo>Updating for module: ${module.id}</echo>
+
+                <propertyregex property="module.basedir"
+                    override="yes"
+                    input="@{dir}"
+                    regexp="${sdk.dir}/"
+                    replace=""
+                    global="true" />
+
+                <local name="module.sources" />
+                <pathconvert pathsep="," property="module.sources">
+                    <path>
+                        <dirset dir="@{dir}">
+                            <include name="docroot/WEB-INF/src" />
+                            <include name="docroot/WEB-INF/service" />
+                        </dirset>
+                    </path>
+                    <map from="@{dir}/" to="" />
+                </pathconvert>
+
+                <local name="module.binaries" />
+                <property name="module.binaries" value="docroot/WEB-INF/classes" />
+
+                <local name="module.libraries" />
+                <local name="module.lib.dir" />
+                <property name="module.lib.dir" value="@{dir}/docroot/WEB-INF/lib" />
+                <if>
+                    <and>
+                        <available file="${module.lib.dir}" type="dir" />
+                        <resourcecount when="greater" count="0">
+                            <fileset dir="${module.lib.dir}" includes="**/*.jar" />
+                        </resourcecount>
+                    </and>
+                    <then>
+                        <property name="module.libraries" value="docroot/WEB-INF/lib/*.jar,../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+                    </then>
+                    <else>
+                        <property name="module.libraries" value="../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+                    </else>
+                </if>
+
+                <local name="module.exclusions" />
+                <pathconvert pathsep="," property="module.exclusions">
+                    <path>
+                        <fileset dir="@{dir}">
+                            <include name="docroot/WEB-INF/src/**/*.java" />
+                            <include name="docroot/WEB-INF/service/**/*.java" />
+                            <contains text="@generated" casesensitive="yes"/>
+                        </fileset>
+                        <fileset dir="@{dir}">
+                            <include name="docroot/WEB-INF/src/**/*Clp.java" />
+                            <include name="docroot/WEB-INF/service/**/*Clp.java" />
+                            <include name="docroot/WEB-INF/src/**/Clp*.java" />
+                            <include name="docroot/WEB-INF/service/**/Clp*.java" />
+                        </fileset>
+                    </path>
+                    <map from="@{dir}/docroot/WEB-INF/src/" to="" />
+                    <map from="@{dir}/docroot/WEB-INF/service/" to="" />
+                </pathconvert>
+
+                <propertyfile file="${sonar.prop.file}" comment="GENERATED FILE - DO NOT EDIT!">
+                    <entry key="${module.id}.sonar.projectBaseDir" value="${module.basedir}" />
+                    <entry key="${module.id}.sonar.sources" value="${module.sources}" />
+                    <entry key="${module.id}.sonar.binaries" value="${module.binaries}" />
+                    <entry key="${module.id}.sonar.libraries" value="${module.libraries}" />
+                    <entry key="${module.id}.sonar.exclusions" value="${module.exclusions}" />
+                </propertyfile>
+
+                <echo></echo>
+            </sequential>
+        </for>
+    </target>
+
+</project>
