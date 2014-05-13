@@ -3,15 +3,10 @@
 
 <project name="sonar-for-liferay" default="configure-sonar">
 
+    <property name="sdk.dir" value="${user.dir}" />
+    <import file="${sdk.dir}/build-common.xml" />
+
     <target name="configure-sonar">
-
-        <property name="sdk.dir" value="${user.dir}" />
-
-        <path id="lib.classpath">
-            <fileset dir="${basedir}/lib" includes="*.jar" />
-        </path>
-
-        <taskdef classpathref="lib.classpath" resource="net/sf/antcontrib/antlib.xml" />
 
         <echo message="Generating Sonar properties file" />
 
