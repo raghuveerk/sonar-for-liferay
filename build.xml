@@ -3,7 +3,8 @@
 
 <project name="sonar-for-liferay" default="configure-sonar">
 
-    <property name="sdk.dir" value="${user.dir}" />
+    <property file="build.${user.name}.properties" />
+    <echo message="SDK Dir is ${sdk.dir}" />
     <import file="${sdk.dir}/build-common.xml" />
 
     <target name="configure-sonar">
@@ -124,12 +125,6 @@
                             <include name="docroot/WEB-INF/service/**/*.java" />
                             <contains text="@generated" casesensitive="yes"/>
                         </fileset>
-                        <fileset dir="@{dir}">
-                            <include name="docroot/WEB-INF/src/**/*Clp.java" />
-                            <include name="docroot/WEB-INF/service/**/*Clp.java" />
-                            <include name="docroot/WEB-INF/src/**/Clp*.java" />
-                            <include name="docroot/WEB-INF/service/**/Clp*.java" />
-                        </fileset>
                     </path>
                     <map from="@{dir}/docroot/WEB-INF/src/" to="" />
                     <map from="@{dir}/docroot/WEB-INF/service/" to="" />
@@ -140,7 +135,7 @@
                     <entry key="${module.id}.sonar.sources" value="${module.sources}" />
                     <entry key="${module.id}.sonar.binaries" value="${module.binaries}" />
                     <entry key="${module.id}.sonar.libraries" value="${module.libraries}" />
-                    <entry key="${module.id}.sonar.exclusions" value="${module.exclusions}" />
+                	<entry key="${module.id}.sonar.exclusions" value="**/*Soap.java, **/*Clp.java, **/*PersistenceImpl.java, **/*ClpInvoker.java, **/*LocalServiceBaseImpl.java, **/ClpSerializer.java, **/*Model.java, **/*ModelImpl.java, **/*Wrapper.java,**/*BaseImpl.java, **/service/**/*.java" />
                 </propertyfile>
 
                 <echo></echo>
