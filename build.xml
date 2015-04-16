@@ -110,10 +110,16 @@
                         </resourcecount>
                     </and>
                     <then>
-                        <property name="module.libraries" value="docroot/WEB-INF/lib/*.jar,../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+                        <property name="module.libraries" value="docroot/WEB-INF/lib/*.jar" />
+                        <!--
+<property name="module.libraries" value="docroot/WEB-INF/lib/*.jar,../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+-->
                     </then>
                     <else>
-                        <property name="module.libraries" value="../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+                        <property name="module.libraries" value="../../lib/*.jar" />
+                        <!--
+<property name="module.libraries" value="../../lib/*.jar,${app.server.lib.global.dir}/*.jar,${app.server.lib.portal.dir}/*.jar" />
+-->
                     </else>
                 </if>
 
